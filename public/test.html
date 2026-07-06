@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Observer Test Page</title>
+</head>
+<body>
+  <h1>Observer Test Page</h1>
+  <p>Open your browser console and Network tab to see tracking events.</p>
+  <button id="cta-button">Click me</button>
+  <a href="#" id="test-link">Test link</a>
+  <form id="signup-form" name="signup">
+    <label for="full-name">Full name</label>
+    <input type="text" id="full-name" name="fullName" placeholder="Type something..." />
+
+    <label for="email">Email address</label>
+    <input type="email" id="email" name="email" placeholder="you@example.com" />
+
+    <label for="message">Message</label>
+    <textarea id="message" name="message" placeholder="Your message..."></textarea>
+
+    <button type="submit" id="submit-button">Submit</button>
+  </form>
+  <div style="height: 2000px; background: linear-gradient(white, lightblue);">
+    <p>Scroll down to trigger scroll tracking</p>
+  </div>
+
+  <!-- Replace YOUR_PROJECT_ID with the ID from your dashboard -->
+  <script src="/t.js?pid=28e39e19-a47" defer></script>
+</body>
+</html>
