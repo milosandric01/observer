@@ -5,17 +5,23 @@
   var script = document.currentScript || (function () {
     var scripts = document.getElementsByTagName('script');
     for (var i = scripts.length - 1; i >= 0; i--) {
-      if (scripts[i].src && scripts[i].src.indexOf('/t.js') !== -1) return scripts[i];
+      if (scripts[i].src && scripts[i].src.indexOf('/o.js') !== -1) return scripts[i];
     }
   })();
 
-  var projectId = script && (script.getAttribute('data-project') || new URL(script.src).searchParams.get('pid'));
+  var projectId = script && (
+    script.getAttribute('data-site') ||
+    script.getAttribute('data-project') ||
+    new URL(script.src).searchParams.get('pid')
+  );
   if (!projectId) {
-    console.warn('[Observer] Missing project ID. Add data-project="YOUR_ID" to the script tag.');
+    console.warn('[Observer] Missing project ID. Add data-site="YOUR_ID" to the script tag.');
     return;
   }
 
-  var endpoint = script.src.replace(/\/t\.js.*$/, '/api/track');
+  // API endpoint: explicit data-api attribute, or derived from the script's origin.
+  var endpoint = (script && script.getAttribute('data-api')) ||
+    script.src.replace(/\/[^\/]*\.js.*$/, '/api/track');
   var sessionId = getSessionId();
   var pageEnteredAt = Date.now();
   var maxScroll = 0;

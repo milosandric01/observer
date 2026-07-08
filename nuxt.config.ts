@@ -17,7 +17,7 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/t.js': {
+    '/o.js': {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'public, max-age=3600'
