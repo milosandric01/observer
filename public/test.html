@@ -1,30 +1,187 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Observer Test Page</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acme Analytics – Understand Your Users</title>
+  <script src="/t.js?pid=28e39e19-a47&v=4" defer></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.6; }
+    section { padding: 100px 24px; max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 3rem; font-weight: 700; margin-bottom: 16px; }
+    h2 { font-size: 2rem; font-weight: 600; margin-bottom: 12px; }
+    p { font-size: 1.125rem; color: #444; margin-bottom: 16px; }
+    .btn { display: inline-block; padding: 14px 28px; border-radius: 8px; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; }
+    .btn-primary { background: #5e6ad2; color: #fff; }
+    .btn-secondary { background: #f0f0f5; color: #1a1a2e; }
+    .hero { min-height: 90vh; display: flex; flex-direction: column; justify-content: center; }
+    .features { background: #f8f9fb; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; margin-top: 32px; }
+    .feature-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; }
+    .feature-card h3 { font-size: 1.25rem; margin-bottom: 8px; }
+    .pricing { text-align: center; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-top: 32px; }
+    .pricing-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 32px; }
+    .pricing-card h3 { font-size: 1.5rem; margin-bottom: 8px; }
+    .pricing-card .price { font-size: 2.5rem; font-weight: 700; margin-bottom: 16px; }
+    .testimonials { background: #f8f9fb; }
+    .testimonial { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .testimonial cite { display: block; margin-top: 12px; font-style: normal; font-weight: 600; color: #666; }
+    .cta { text-align: center; background: #1a1a2e; color: #fff; border-radius: 16px; margin: 60px auto; padding: 80px 24px; }
+    .cta h2, .cta p { color: #fff; }
+    .faq details { border-bottom: 1px solid #e5e7eb; padding: 20px 0; }
+    .faq summary { font-size: 1.125rem; font-weight: 600; cursor: pointer; }
+    .faq p { margin-top: 12px; }
+    .contact-form { max-width: 480px; }
+    .contact-form label { display: block; font-weight: 500; margin-bottom: 6px; margin-top: 16px; }
+    .contact-form input, .contact-form textarea, .contact-form select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; }
+    .contact-form textarea { min-height: 120px; resize: vertical; }
+    footer { text-align: center; padding: 40px 24px; color: #888; font-size: 0.875rem; }
+  </style>
 </head>
 <body>
-  <h1>Observer Test Page</h1>
-  <p>Open your browser console and Network tab to see tracking events.</p>
-  <button id="cta-button">Click me</button>
-  <a href="#" id="test-link">Test link</a>
-  <form id="signup-form" name="signup">
-    <label for="full-name">Full name</label>
-    <input type="text" id="full-name" name="fullName" placeholder="Type something..." />
 
-    <label for="email">Email address</label>
-    <input type="email" id="email" name="email" placeholder="you@example.com" />
+  <!-- Hero -->
+  <section class="hero" id="hero" observer-section="hero">
+    <h1>Understand what your users actually do</h1>
+    <p>Lightweight analytics that shows you the real story — no cookies, no complexity.</p>
+    <div style="display: flex; gap: 12px; margin-top: 24px;">
+      <a href="#contact" class="btn btn-primary" id="hero-cta">Start free trial</a>
+      <a href="#features" class="btn btn-secondary" id="hero-learn-more">Learn more</a>
+    </div>
+  </section>
 
-    <label for="message">Message</label>
-    <textarea id="message" name="message" placeholder="Your message..."></textarea>
+  <!-- Features -->
+  <section class="features" id="features" observer-section="features">
+    <h2>Features built for modern teams</h2>
+    <p>Everything you need, nothing you don't.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h3>Session replay</h3>
+        <p>See exactly how users navigate your pages — every click, scroll, and form interaction.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Section visibility</h3>
+        <p>Know which parts of your page actually get seen vs. skipped.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Privacy-first</h3>
+        <p>No cookies, no PII. Fully GDPR-compliant out of the box.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Lightweight script</h3>
+        <p>Under 2KB gzipped. Zero impact on your Core Web Vitals.</p>
+      </div>
+    </div>
+  </section>
 
-    <button type="submit" id="submit-button">Submit</button>
-  </form>
-  <div style="height: 2000px; background: linear-gradient(white, lightblue);">
-    <p>Scroll down to trigger scroll tracking</p>
+  <!-- How it works -->
+  <section id="how-it-works" observer-section="how-it-works">
+    <h2>How it works</h2>
+    <p>1. Add a single script tag to your site.</p>
+    <p>2. Mark sections with <code>observer-section</code> to track visibility.</p>
+    <p>3. Open your dashboard and see real user behavior in real time.</p>
+  </section>
+
+  <!-- Pricing -->
+  <section class="pricing" id="pricing" observer-section="pricing">
+    <h2>Simple, transparent pricing</h2>
+    <p>No per-seat fees. No surprise overages.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Hobby</h3>
+        <div class="price">$0</div>
+        <p>5,000 events/mo<br/>1 project<br/>7-day retention</p>
+        <a href="#contact" class="btn btn-secondary">Get started</a>
+      </div>
+      <div class="pricing-card" style="border-color: #5e6ad2;">
+        <h3>Pro</h3>
+        <div class="price">$29</div>
+        <p>100,000 events/mo<br/>Unlimited projects<br/>90-day retention</p>
+        <a href="#contact" class="btn btn-primary" id="pricing-pro-cta">Start trial</a>
+      </div>
+      <div class="pricing-card">
+        <h3>Team</h3>
+        <div class="price">$99</div>
+        <p>1M events/mo<br/>Team access<br/>1-year retention</p>
+        <a href="#contact" class="btn btn-secondary">Contact us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials" id="testimonials" observer-section="testimonials">
+    <h2>Loved by product teams</h2>
+    <div class="testimonial">
+      <p>"We replaced Hotjar and Mixpanel with this. Simpler, faster, and we actually look at the data now."</p>
+      <cite>— Sarah K., Head of Product at Loom</cite>
+    </div>
+    <div class="testimonial">
+      <p>"The section visibility feature showed us that 70% of users never scroll past our hero. We redesigned and conversions jumped 40%."</p>
+      <cite>— Mike R., Growth Lead at Vercel</cite>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq" observer-section="faq">
+    <h2>Frequently asked questions</h2>
+    <details>
+      <summary>Do I need to install anything?</summary>
+      <p>Nope. Just paste a single script tag and you're live in 30 seconds.</p>
+    </details>
+    <details>
+      <summary>Is it GDPR compliant?</summary>
+      <p>Yes. We don't use cookies and never collect personal data.</p>
+    </details>
+    <details>
+      <summary>Can I track single-page apps?</summary>
+      <p>Absolutely. We detect SPA navigation automatically via the History API.</p>
+    </details>
+    <details>
+      <summary>How does section tracking work?</summary>
+      <p>Add <code>observer-section="name"</code> to any element. When 50% of it enters the viewport for at least 1 second, we fire a section_view event.</p>
+    </details>
+  </section>
+
+  <!-- Contact / Signup form -->
+  <section id="contact" observer-section="contact">
+    <h2>Get in touch</h2>
+    <p>Start your free trial or ask us anything.</p>
+    <form id="signup-form" name="signup" class="contact-form">
+      <label for="full-name">Full name</label>
+      <input type="text" id="full-name" name="fullName" placeholder="Jane Smith" />
+
+      <label for="email">Work email</label>
+      <input type="email" id="email" name="email" placeholder="jane@company.com" />
+
+      <label for="company">Company</label>
+      <input type="text" id="company" name="company" placeholder="Acme Inc." />
+
+      <label for="plan">Interested in</label>
+      <select id="plan" name="plan">
+        <option value="hobby">Hobby (Free)</option>
+        <option value="pro" selected>Pro ($29/mo)</option>
+        <option value="team">Team ($99/mo)</option>
+      </select>
+
+      <label for="message">Anything else?</label>
+      <textarea id="message" name="message" placeholder="Tell us about your use case..."></textarea>
+
+      <button type="submit" id="submit-button" class="btn btn-primary" style="margin-top: 20px; width: 100%;">Start free trial</button>
+    </form>
+  </section>
+
+  <!-- CTA banner -->
+  <div class="cta" observer-section="final-cta">
+    <h2>Ready to understand your users?</h2>
+    <p>Set up in 30 seconds. No credit card required.</p>
+    <a href="#contact" class="btn btn-primary" id="final-cta-button" style="margin-top: 24px;">Get started free</a>
   </div>
 
-  <!-- Replace YOUR_PROJECT_ID with the ID from your dashboard -->
-  <script src="/t.js?pid=28e39e19-a47" defer></script>
+  <footer>
+    <p>&copy; 2026 Acme Analytics. Built for developers, by developers.</p>
+  </footer>
+
 </body>
 </html>

@@ -29,6 +29,10 @@ const ICONS: Record<string, string> = {
     '<path d="M14 2 7 9M14 2l-4.3 12-2.7-5.3L2 6 14 2Z"/>',
   form_focus:
     '<path d="M8 3v10M5.5 3H10M5.5 13H10"/>',
+  section_view:
+    '<rect x="2" y="4" width="12" height="8" rx="1.5"/><path d="M5 8h6M5 10h4"/>',
+  away:
+    '<circle cx="8" cy="8" r="5.5"/><path d="M6.5 5.5v5M9.5 5.5v5"/>',
   reload:
     '<path d="M13.5 7a5.5 5.5 0 1 0-1.3 4.3"/><path d="M13.5 3.5V7H10"/>'
 }

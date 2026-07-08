@@ -212,7 +212,7 @@
 
   // --- SPA Navigation Detection ---
   var lastPath = location.pathname;
-  var observer = new MutationObserver(function () {
+  var spaObserver = new MutationObserver(function () {
     if (location.pathname !== lastPath) {
       // Track leave of old page
       track('page_leave', {
@@ -233,8 +233,110 @@
         screenWidth: window.innerWidth,
         screenHeight: window.innerHeight
       });
+
+      // Re-observe sections on new page
+      observeSections();
     }
   });
-  observer.observe(document.body, { childList: true, subtree: true });
+  spaObserver.observe(document.body, { childList: true, subtree: true });
+
+  // --- Section Visibility Tracking (IntersectionObserver) ---
+  var SECTION_ATTR = 'observer-section';
+  var sectionState = {}; // { enteredAt, deepAt, engaged, fired }
+
+  function flushSection(name, el) {
+    var s = sectionState[name];
+    if (!s || s.fired) return;
+    s.fired = true;
+    var duration = s.enteredAt ? Date.now() - s.enteredAt : 0;
+    // engaged = held the focus band for at least 1 second
+    var engaged = s.engaged || (s.deepAt && (Date.now() - s.deepAt >= 1000));
+    track('section_view', {
+      section: name,
+      duration: duration,
+      engaged: engaged,
+      tag: el ? el.tagName.toLowerCase() : undefined,
+      id: (el && el.id) || undefined
+    });
+  }
+
+  function observeSections() {
+    if (!window.IntersectionObserver) return;
+
+    var sections = document.querySelectorAll('[' + SECTION_ATTR + ']');
+    if (!sections.length) return;
+
+    // A section is "active" only while it crosses a band through the vertical
+    // centre of the screen. It fires the moment it leaves that band — i.e. as
+    // soon as the next section takes over — instead of waiting for the section
+    // to scroll completely off screen (which lags by 1-2 sections when several
+    // are visible at once).
+    var sectionObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var name = entry.target.getAttribute(SECTION_ATTR);
+        if (!name) return;
+
+        if (!sectionState[name]) {
+          sectionState[name] = { enteredAt: null, deepAt: null, engaged: false, fired: false };
+        }
+        var s = sectionState[name];
+        if (s.fired) return;
+
+        // Ignore exits caused by the tab being hidden (tab switch, minimize).
+        // The browser reports every observed element as not-intersecting when
+        // the page is hidden, which would otherwise flush all sections at once.
+        if (document.visibilityState === 'hidden') return;
+
+        if (entry.isIntersecting) {
+          // Section reached the focus band — it's now the active section.
+          if (!s.enteredAt) {
+            s.enteredAt = Date.now();
+            s.deepAt = s.enteredAt;
+          }
+        } else {
+          // Section left the focus band — the next section is taking over.
+          if (s.enteredAt) {
+            if (s.deepAt && (Date.now() - s.deepAt >= 1000)) {
+              s.engaged = true;
+            }
+            flushSection(name, entry.target);
+            sectionObserver.unobserve(entry.target);
+          }
+        }
+      });
+    }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
+
+    sections.forEach(function (el) {
+      var name = el.getAttribute(SECTION_ATTR);
+      if (!sectionState[name] || !sectionState[name].fired) {
+        sectionObserver.observe(el);
+      }
+    });
+
+    // On page leave, flush any sections still in viewport
+    function flushRemaining() {
+      var elems = document.querySelectorAll('[' + SECTION_ATTR + ']');
+      elems.forEach(function (el) {
+        var name = el.getAttribute(SECTION_ATTR);
+        if (name) flushSection(name, el);
+      });
+    }
+    // Only flush still-visible sections when the page is genuinely unloading.
+    // pagehide fires on real navigation/close but NOT on tab switches, so a
+    // user leaving and returning to the tab no longer dumps every section.
+    function flushRemainingAndSend() {
+      flushRemaining();
+      flush();
+    }
+    window.addEventListener('pagehide', flushRemainingAndSend);
+    window.addEventListener('beforeunload', flushRemainingAndSend);
+  }
+
+  // Initial observation (wait for DOM ready)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observeSections);
+  } else {
+    observeSections();
+  }
 
 })();

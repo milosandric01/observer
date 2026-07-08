@@ -33,6 +33,27 @@
                   class="w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-canvas mt-1.5"
                 />
                 <span
+                  v-else-if="node.ev?.type === 'section_view' && node.ev?.data?.engaged"
+                  class="flex items-center justify-center w-6 h-6 rounded-full bg-primary/15 border border-primary text-primary"
+                  title="Engaged section"
+                >
+                  <ActionIcon name="section_view" class="w-3 h-3" />
+                </span>
+                <span
+                  v-else-if="node.ev?.type === 'section_view'"
+                  class="flex items-center justify-center w-6 h-6 rounded-full bg-surface-1 border border-hairline-strong/50 text-ink-subtle/50"
+                  title="Skimmed section"
+                >
+                  <ActionIcon name="section_view" class="w-3 h-3 opacity-50" />
+                </span>
+                <span
+                  v-else-if="node.ev?.type === 'away'"
+                  class="flex items-center justify-center w-6 h-6 rounded-full bg-surface-1 border border-dashed border-hairline-strong/50 text-ink-subtle/50"
+                  title="User was away"
+                >
+                  <ActionIcon name="away" class="w-3 h-3 opacity-60" />
+                </span>
+                <span
                   v-else
                   class="flex items-center justify-center w-6 h-6 rounded-full bg-surface-2 border border-hairline text-ink-subtle"
                   :title="node.ev.type"
@@ -45,7 +66,17 @@
               <div class="flex-1 min-w-0 pb-4">
                 <div v-if="node.kind === 'page'" class="flex justify-between items-baseline gap-3 pt-0.5">
                   <span class="text-body-sm font-medium text-ink break-all">{{ node.path }}</span>
-                  <span class="text-caption text-ink-subtle font-mono shrink-0">{{ node.duration }}</span>
+                  <span class="text-caption text-ink-subtle font-mono shrink-0">
+                    {{ node.duration }}<template v-if="node.maxScroll != null"> · ↓{{ node.maxScroll }}%</template>
+                  </span>
+                </div>
+                <div v-else-if="node.ev?.type === 'section_view'" class="flex justify-between items-baseline gap-3 pt-1">
+                  <span class="text-body-sm break-all" :class="node.ev.data?.engaged ? 'text-ink' : 'text-ink-subtle/70'">{{ describe(node.ev) }}</span>
+                  <span class="text-caption text-ink-subtle font-mono shrink-0">{{ clock(node.ev.timestamp) }}</span>
+                </div>
+                <div v-else-if="node.ev?.type === 'away'" class="flex justify-between items-baseline gap-3 pt-1">
+                  <span class="text-body-sm italic text-ink-subtle/60">{{ describe(node.ev) }}</span>
+                  <span class="text-caption text-ink-subtle font-mono shrink-0">{{ clock(node.ev.timestamp) }}</span>
                 </div>
                 <div v-else class="flex justify-between items-baseline gap-3 pt-1">
                   <span class="text-body-sm text-ink-muted break-all">{{ describe(node.ev) }}</span>
@@ -79,51 +110,80 @@ const open = ref<string | null>(null)
 const loading = ref(false)
 const timeline = ref<any[]>([])
 
+// Gaps shorter than this (tab flicks) are merged silently without a marker.
+const AWAY_GAP_MS = 60_000
+
 const pages = computed(() => {
   const groups: any[] = []
   let current: any = null
 
-  function finalize(end: number, ms: number | null) {
+  function finalize() {
     if (!current) return
-    current.end = end
-    current.ms = ms
-    // Skip empty sections produced by consecutive page_leave events.
+    // Skip empty groups produced by stray page_leave events.
     if (current.events.length || current.hasPageview) groups.push(current)
     current = null
   }
 
+  function startGroup(path: string, ts: number) {
+    current = {
+      path,
+      start: ts,
+      end: ts,
+      ms: null as number | null,
+      maxScroll: null as number | null,
+      leftAt: null as number | null,
+      hasPageview: false,
+      events: [] as any[]
+    }
+  }
+
+  // If activity resumes after the user was away a while (e.g. switched tabs
+  // and came back), show an inline "away" marker instead of a silent gap.
+  function markReturn(ts: number) {
+    if (!current?.leftAt) return
+    const gap = ts - current.leftAt
+    if (gap >= AWAY_GAP_MS) {
+      current.events.push({ type: 'away', timestamp: ts, data: { duration: gap } })
+    }
+    current.leftAt = null
+  }
+
   for (const ev of timeline.value) {
     if (ev.type === 'page_leave') {
-      // page_leave ends the current page visit. Don't list it as an event;
-      // the next activity (or pageview) starts a fresh section.
+      // Checkpoint, not a boundary: update duration/scroll on the open group.
+      if (!current) continue
       const t = ev.data?.timeOnPage
-      finalize(ev.timestamp, t != null ? t : null)
+      if (t != null) current.ms = t
+      const scroll = ev.data?.maxScroll
+      if (scroll != null) current.maxScroll = Math.max(current.maxScroll ?? 0, scroll)
+      current.leftAt = ev.timestamp
+      current.end = ev.timestamp
       continue
     }
-    if (!current) {
-      current = {
-        path: ev.path || ev.url || '/',
-        start: ev.timestamp,
-        end: ev.timestamp,
-        ms: null as number | null,
-        hasPageview: false,
-        events: [] as any[]
-      }
-    }
+    // Skip scroll events — maxScroll is shown on page header via page_leave
+    if (ev.type === 'scroll') continue
+
     if (ev.type === 'pageview') {
-      current.path = ev.path || ev.url || current.path
+      // Every pageview is a real page load — start a fresh visit.
+      finalize()
+      startGroup(ev.path || ev.url || '/', ev.timestamp)
       current.hasPageview = true
-    } else {
-      current.events.push(ev)
+      current.end = ev.timestamp
+      continue
     }
+
+    if (!current) startGroup(ev.path || ev.url || '/', ev.timestamp)
+    markReturn(ev.timestamp)
+    current.events.push(ev)
     current.end = ev.timestamp
   }
-  finalize(current?.end ?? 0, null)
+  finalize()
 
   return groups.map((g) => ({
     path: g.path,
     events: g.events,
-    duration: fmtDuration(g.ms ?? (g.end - g.start))
+    duration: fmtDuration(g.ms ?? (g.end - g.start)),
+    maxScroll: g.maxScroll
   }))
 })
 
@@ -132,7 +192,7 @@ const pages = computed(() => {
 const journey = computed(() => {
   const nodes: any[] = []
   for (const pg of pages.value) {
-    nodes.push({ kind: 'page', path: pg.path, duration: pg.duration })
+    nodes.push({ kind: 'page', path: pg.path, duration: pg.duration, maxScroll: pg.maxScroll })
     for (const ev of pg.events) nodes.push({ kind: 'event', ev })
   }
   return nodes
@@ -162,6 +222,7 @@ async function toggle(session: any) {
 }
 
 function describe(ev: any) {
+  if (ev.type === 'away') return `away for ${fmtDuration(ev.data?.duration)}`
   if (ev.type === 'pageview') return ev.path || ev.url
   if (ev.type === 'click') {
     const el = ev.data?.element
@@ -183,6 +244,14 @@ function describe(ev: any) {
       return `submitted form → ${urlPath(ev.data.action)} (${method})`
     }
     return 'submitted a form'
+  }
+  if (ev.type === 'section_view') {
+    const name = ev.data?.section || 'unknown'
+    const dur = ev.data?.duration
+    const engaged = ev.data?.engaged
+    const time = dur != null ? fmtDuration(dur) : ''
+    if (engaged) return `${name} · ${time}`
+    return `${name} · ${time || '0s'} · skimmed`
   }
   return JSON.stringify(ev.data || {})
 }

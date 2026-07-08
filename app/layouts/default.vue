@@ -5,7 +5,7 @@
         <h1 class="text-body-lg font-semibold tracking-tight text-ink">Observer</h1>
       </div>
       <nav class="flex flex-col gap-1">
-        <NuxtLink to="/" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-body-sm font-medium text-ink-subtle hover:text-ink hover:bg-surface-2 transition-all [&.router-link-active]:text-ink [&.router-link-active]:bg-surface-2">
+        <NuxtLink to="/dashboard" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-body-sm font-medium text-ink-subtle hover:text-ink hover:bg-surface-2 transition-all [&.router-link-active]:text-ink [&.router-link-active]:bg-surface-2">
           <span class="text-base opacity-70">◉</span>
           Overview
         </NuxtLink>
