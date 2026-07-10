@@ -1,6 +1,6 @@
 {
   "framework": "nuxtjs",
-  "buildCommand": "nuxt build",
+  "buildCommand": "drizzle-kit migrate && nuxt build",
   "headers": [
     {
       "source": "/o.js",
