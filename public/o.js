@@ -10,12 +10,12 @@
   })();
 
   var projectId = script && (
+    script.getAttribute('data-project-id') ||
     script.getAttribute('data-site') ||
-    script.getAttribute('data-project') ||
     new URL(script.src).searchParams.get('pid')
   );
   if (!projectId) {
-    console.warn('[Observer] Missing project ID. Add data-site="YOUR_ID" to the script tag.');
+    console.warn('[Observer] Missing project ID. Add data-project-id="YOUR_ID" to the script tag.');
     return;
   }
 

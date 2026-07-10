@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Name and domain are required' })
   }
 
-  const id = body.domain.replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+  const id = crypto.randomUUID().slice(0, 12)
 
   const project = {
     id,
