@@ -8,6 +8,13 @@
       "when": 1782665944468,
       "tag": "0000_premium_nitro",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783717027499,
+      "tag": "0001_cute_lucky_pierre",
+      "breakpoints": true
     }
   ]
 }

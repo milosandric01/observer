@@ -28,3 +28,9 @@ export const events = pgTable('events', {
   receivedAt: text('received_at').notNull(),
   payload: jsonb('payload').$type<any[]>().notNull()
 })
+
+export const waitlist = pgTable('waitlist', {
+  id: serial('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  createdAt: text('created_at').notNull()
+})
