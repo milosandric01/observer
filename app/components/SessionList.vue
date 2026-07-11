@@ -89,9 +89,9 @@
         </div>
       </div>
     </div>
-    <p v-else class="text-body-sm text-ink-subtle text-center py-10 bg-surface-1 border border-dashed border-hairline-strong rounded-lg">
+    <UiEmptyState v-else>
       No sessions recorded yet. Data appears once users visit your site.
-    </p>
+    </UiEmptyState>
   </section>
 </template>
 

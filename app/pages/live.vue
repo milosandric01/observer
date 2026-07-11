@@ -18,9 +18,9 @@
             <span class="text-caption text-ink-subtle shrink-0">{{ event.time }}</span>
           </div>
         </div>
-        <p v-if="!events.length" class="text-body-sm text-ink-subtle text-center py-10 bg-surface-1 border border-dashed border-hairline-strong rounded-lg">
+        <UiEmptyState v-if="!events.length">
           Waiting for live events...
-        </p>
+        </UiEmptyState>
       </div>
     </div>
   </NuxtLayout>
