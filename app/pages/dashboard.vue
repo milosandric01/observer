@@ -87,7 +87,10 @@
                       <path d="M3 12h18" />
                       <path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18" />
                     </svg>
-                    <span class="text-body-sm truncate" :class="session.source === 'Direct' ? 'text-ink-subtle' : 'text-ink-muted'">{{ session.source || 'Direct' }}</span>
+                    <div class="min-w-0">
+                      <span class="block text-body-sm truncate" :class="session.source === 'Direct' ? 'text-ink-subtle' : 'text-ink-muted'">{{ session.source || 'Direct' }}</span>
+                      <span v-if="session.utmCampaign" class="block text-eyebrow text-primary truncate" :title="utmTooltip(session)">{{ session.utmCampaign }}</span>
+                    </div>
                   </div>
                 </td>
 
@@ -230,17 +233,13 @@ function timeAgo(date: string) {
   return Math.floor(seconds / 86400) + 'd ago'
 }
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  US: '🇺🇸', GB: '🇬🇧', DE: '🇩🇪', FR: '🇫🇷', CA: '🇨🇦', AU: '🇦🇺',
-  NL: '🇳🇱', SE: '🇸🇪', JP: '🇯🇵', BR: '🇧🇷', IN: '🇮🇳', PL: '🇵🇱',
-  ES: '🇪🇸', KR: '🇰🇷', IT: '🇮🇹', PT: '🇵🇹', CH: '🇨🇭', AT: '🇦🇹',
-  MX: '🇲🇽', AR: '🇦🇷', CL: '🇨🇱', CO: '🇨🇴', CN: '🇨🇳', RU: '🇷🇺',
-  TW: '🇹🇼', SG: '🇸🇬', HK: '🇭🇰', IE: '🇮🇪', NO: '🇳🇴', DK: '🇩🇰',
-  FI: '🇫🇮', BE: '🇧🇪', NZ: '🇳🇿', ZA: '🇿🇦', IL: '🇮🇱', TR: '🇹🇷',
-}
-
 function countryFlag(code: string) {
-  return COUNTRY_FLAGS[code] || code
+  if (!code || code.length !== 2) return code || ''
+  // Convert ISO 3166-1 alpha-2 code to regional indicator emoji
+  const upper = code.toUpperCase()
+  if (!/^[A-Z]{2}$/.test(upper)) return code
+  const codePoints = [...upper].map(c => 0x1f1e6 + (c.charCodeAt(0) - 65))
+  return String.fromCodePoint(...codePoints)
 }
 
 function sourceHost(url: string) {
@@ -252,6 +251,14 @@ function sourceHost(url: string) {
 
 function visitorName(id: string) {
   return visitorIdentity(id).name
+}
+
+function utmTooltip(session: any) {
+  return [
+    session.utmSource && `source: ${session.utmSource}`,
+    session.utmMedium && `medium: ${session.utmMedium}`,
+    session.utmCampaign && `campaign: ${session.utmCampaign}`,
+  ].filter(Boolean).join(' · ')
 }
 
 // Initial load (selectedProjectId is set by the layout)
