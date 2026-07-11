@@ -21,7 +21,7 @@ const paddings: Record<string, string> = {
 }
 
 const classes = computed(() => [
-  'bg-surface-1 border border-hairline rounded-lg',
+  'bg-canvas border border-hairline rounded-lg',
   paddings[props.padding],
   props.interactive ? 'cursor-pointer hover:border-hairline-strong transition-colors' : '',
 ])

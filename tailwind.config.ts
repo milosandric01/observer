@@ -9,7 +9,7 @@ export default {
           hover: '#828fff',
           focus: '#5e69d1',
         },
-        canvas: '#010102',
+        canvas: '#08090a',
         surface: {
           1: '#0f1011',
           2: '#141516',

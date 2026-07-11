@@ -13,7 +13,10 @@
         </UiCard>
         <UiCard class="flex flex-col gap-2">
           <span class="text-caption font-medium text-ink-subtle uppercase tracking-wide">Active Now</span>
-          <span class="text-display-md text-success">{{ stats.activeNow }}</span>
+          <span class="flex items-center gap-2.5">
+            <span class="text-display-md text-success">{{ stats.activeNow }}</span>
+            <span class="ob-pulse w-[7px] h-[7px] rounded-full bg-success" style="box-shadow:0 0 8px #27a644;" />
+          </span>
         </UiCard>
         <UiCard class="flex flex-col gap-2">
           <span class="text-caption font-medium text-ink-subtle uppercase tracking-wide">Pageviews Today</span>
@@ -25,10 +28,19 @@
         </UiCard>
       </div>
 
-      <!-- Charts -->
+      <!-- Combined overview chart -->
+      <div class="mb-10">
+        <OverviewChart :metrics="overviewMetrics" :sessions="chartSessions" :pageviews="chartPageviews" />
+      </div>
+
+      <!-- Breakdowns -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
-        <AreaChart title="Sessions" :data="chartSessions" />
-        <AreaChart title="Pageviews" :data="chartPageviews" />
+        <BreakdownPanel :tabs="sourceTabs" />
+        <BreakdownPanel :tabs="locationTabs" />
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+        <BreakdownPanel :tabs="techTabs" />
+        <BreakdownPanel :tabs="pageTabs" />
       </div>
 
       <section>
@@ -37,7 +49,7 @@
           <span class="text-caption text-ink-subtle">{{ sessionTotal }} total</span>
         </div>
 
-        <div v-if="sessions.length" class="border border-hairline rounded-lg overflow-hidden bg-surface-1">
+        <div v-if="sessions.length" class="border border-hairline rounded-lg overflow-hidden bg-canvas">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="border-b border-hairline">
@@ -145,6 +157,11 @@ const pageSize = 20
 const totalPages = ref(1)
 const sessionTotal = ref(0)
 
+// Breakdown data
+const breakdown = ref<any>({
+  channels: [], sources: [], campaigns: [], countries: [], browsers: [], os: [], devices: [], pages: [],
+})
+
 // Shared project state (set by the layout sidebar selector)
 const projects = useState<any[]>('projects', () => [])
 const selectedProjectId = useState<string>('selectedProjectId', () => '')
@@ -205,10 +222,18 @@ async function loadChart() {
   }
 }
 
+async function loadBreakdown() {
+  const projectId = selectedProjectId.value
+  if (!projectId) return
+
+  const data = await $fetch('/api/stats/breakdown', { query: { pid: projectId } }) as any
+  if (data) breakdown.value = data
+}
+
 async function loadProjectData() {
   page.value = 1
   try {
-    await Promise.all([loadStats(), loadSessions(), loadChart()])
+    await Promise.all([loadStats(), loadSessions(), loadChart(), loadBreakdown()])
   } catch (_e) {
     // Failed to load project data
   }
@@ -218,6 +243,59 @@ function goToPage(p: number) {
   page.value = p
   loadSessions()
 }
+
+// Trend: recent-half vs previous-half percentage change
+function trendFor(data: Array<{ value: number }>) {
+  const half = Math.floor(data.length / 2)
+  if (!half) return null
+  const recent = data.slice(half).reduce((s, d) => s + d.value, 0)
+  const prev = data.slice(0, half).reduce((s, d) => s + d.value, 0)
+  if (!prev) return recent > 0 ? 100 : null
+  return Math.round(((recent - prev) / prev) * 100)
+}
+
+function sum(data: Array<{ value: number }>) {
+  return data.reduce((s, d) => s + d.value, 0)
+}
+
+// Summary metrics shown above the combined chart
+const overviewMetrics = computed(() => [
+  { label: 'Sessions', value: String(sum(chartSessions.value)), trend: trendFor(chartSessions.value) },
+  { label: 'Pageviews', value: String(sum(chartPageviews.value)), trend: trendFor(chartPageviews.value) },
+  { label: 'Active now', value: String(stats.value.activeNow), accent: true },
+  { label: 'Avg. scroll depth', value: stats.value.avgScroll + '%' },
+])
+
+// Breakdown tab definitions
+const sourceTabs = computed(() => [
+  { key: 'channel', label: 'Channel', icon: 'none' as const, items: breakdown.value.channels },
+  {
+    key: 'source', label: 'Source', icon: 'favicon' as const,
+    items: (breakdown.value.sources || []).map((s: any) => ({
+      ...s, domain: s.label === 'Direct' ? '' : SOURCE_DOMAINS[s.label],
+    })),
+  },
+  { key: 'campaign', label: 'Campaign', icon: 'none' as const, items: breakdown.value.campaigns },
+])
+
+const locationTabs = computed(() => [
+  {
+    key: 'country', label: 'Country', icon: 'flag' as const,
+    items: (breakdown.value.countries || []).map((c: any) => ({
+      label: countryName(c.label), value: c.value, country: countryFlag(c.label),
+    })),
+  },
+])
+
+const techTabs = computed(() => [
+  { key: 'browser', label: 'Browser', icon: 'browser' as const, items: breakdown.value.browsers },
+  { key: 'os', label: 'OS', icon: 'os' as const, items: breakdown.value.os },
+  { key: 'device', label: 'Device', icon: 'device' as const, items: breakdown.value.devices },
+])
+
+const pageTabs = computed(() => [
+  { key: 'pages', label: 'Pages', icon: 'path' as const, items: breakdown.value.pages },
+])
 
 // React to project switches from the sidebar
 watch(selectedProjectId, () => {
@@ -240,6 +318,16 @@ function countryFlag(code: string) {
   if (!/^[A-Z]{2}$/.test(upper)) return code
   const codePoints = [...upper].map(c => 0x1f1e6 + (c.charCodeAt(0) - 65))
   return String.fromCodePoint(...codePoints)
+}
+
+function countryName(code: string) {
+  if (!code) return 'Unknown'
+  try {
+    const dn = new Intl.DisplayNames(['en'], { type: 'region' })
+    return dn.of(code.toUpperCase()) || code
+  } catch {
+    return code
+  }
 }
 
 function sourceHost(url: string) {

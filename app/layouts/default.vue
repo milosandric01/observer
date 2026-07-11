@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-h-screen">
     <!-- Mobile header -->
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between h-14 px-4 bg-surface-1 border-b border-hairline lg:hidden">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between h-14 px-4 bg-canvas border-b border-hairline lg:hidden">
       <UiLogo :size="20" />
       <button class="text-ink-subtle p-2" @click="sidebarOpen = !sidebarOpen" aria-label="Toggle menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -12,7 +12,7 @@
     <div v-if="sidebarOpen" class="fixed inset-0 bg-overlay/60 z-40 lg:hidden" @click="sidebarOpen = false" />
 
     <!-- Sidebar -->
-    <aside :class="['w-60 bg-surface-1 border-r border-hairline p-6 fixed top-0 left-0 bottom-0 overflow-y-auto z-50 transition-transform duration-200', sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0']">
+    <aside :class="['w-60 bg-canvas border-r border-hairline p-6 fixed top-0 left-0 bottom-0 overflow-y-auto z-50 transition-transform duration-200', sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0']">
       <div class="px-3 mb-5">
         <UiLogo :size="22" />
       </div>
@@ -28,17 +28,17 @@
       </div>
 
       <nav class="flex flex-col gap-1">
-        <NuxtLink to="/dashboard" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-body-sm font-medium text-ink-subtle hover:text-ink hover:bg-surface-2 transition-all [&.router-link-active]:text-ink [&.router-link-active]:bg-surface-2" @click="sidebarOpen = false">
-          <span class="text-base opacity-70">◉</span>
-          Overview
-        </NuxtLink>
-        <NuxtLink to="/live" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-body-sm font-medium text-ink-subtle hover:text-ink hover:bg-surface-2 transition-all [&.router-link-active]:text-ink [&.router-link-active]:bg-surface-2" @click="sidebarOpen = false">
-          <span class="text-base opacity-70">●</span>
-          Live
-        </NuxtLink>
-        <NuxtLink to="/settings" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-body-sm font-medium text-ink-subtle hover:text-ink hover:bg-surface-2 transition-all [&.router-link-active]:text-ink [&.router-link-active]:bg-surface-2" @click="sidebarOpen = false">
-          <span class="text-base opacity-70">⚙</span>
-          Settings
+        <NuxtLink
+          v-for="link in navLinks"
+          :key="link.to"
+          :to="link.to"
+          class="group flex items-center gap-3 px-3 py-2.5 rounded-md text-body-sm font-medium text-ink-subtle hover:text-ink hover:bg-surface-2 transition-all [&.router-link-active]:text-ink [&.router-link-active]:bg-primary/[0.14] [&.router-link-active]:font-medium"
+          @click="sidebarOpen = false"
+        >
+          <span class="flex items-center justify-center w-[15px] h-[15px] rounded-full border-2 border-ink-tertiary group-[.router-link-active]:border-primary transition-colors">
+            <span class="w-[5px] h-[5px] rounded-full bg-primary opacity-0 group-[.router-link-active]:opacity-100" />
+          </span>
+          {{ link.label }}
         </NuxtLink>
       </nav>
     </aside>
@@ -50,6 +50,12 @@
 
 <script setup lang="ts">
 const sidebarOpen = ref(false)
+
+const navLinks = [
+  { to: '/dashboard', label: 'Overview' },
+  { to: '/live', label: 'Live' },
+  { to: '/settings', label: 'Settings' },
+]
 
 // Shared project state across the app
 const projects = useState<any[]>('projects', () => [])
