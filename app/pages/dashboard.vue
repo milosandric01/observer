@@ -81,7 +81,7 @@
                 <!-- Source -->
                 <td class="px-5 py-3">
                   <div class="flex items-center gap-1.5 min-w-0">
-                    <UiFavicon v-if="session.source && session.source !== 'Direct' && sourceHost(session.referrerUrl)" :domain="sourceHost(session.referrerUrl)" :size="16" />
+                    <UiFavicon v-if="session.source && session.source !== 'Direct' && sourceDomain(session)" :domain="sourceDomain(session)" :size="16" />
                     <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="text-ink-subtle shrink-0">
                       <circle cx="12" cy="12" r="9" />
                       <path d="M3 12h18" />
@@ -247,6 +247,34 @@ function sourceHost(url: string) {
   try {
     return new URL(url).hostname.replace(/^www\./, '')
   } catch { return '' }
+}
+
+// Canonical domain for a source's favicon. Maps known brands to their real
+// domain (e.g. X wraps links in t.co, so use x.com for the logo).
+const SOURCE_DOMAINS: Record<string, string> = {
+  'Google': 'google.com',
+  'Bing': 'bing.com',
+  'DuckDuckGo': 'duckduckgo.com',
+  'Yahoo': 'yahoo.com',
+  'Baidu': 'baidu.com',
+  'Yandex': 'yandex.com',
+  'X': 'x.com',
+  'Facebook': 'facebook.com',
+  'Instagram': 'instagram.com',
+  'LinkedIn': 'linkedin.com',
+  'Reddit': 'reddit.com',
+  'YouTube': 'youtube.com',
+  'TikTok': 'tiktok.com',
+  'Pinterest': 'pinterest.com',
+  'Product Hunt': 'producthunt.com',
+  'Hacker News': 'news.ycombinator.com',
+  'GitHub': 'github.com',
+  'Medium': 'medium.com',
+  'Substack': 'substack.com',
+}
+
+function sourceDomain(session: any) {
+  return SOURCE_DOMAINS[session.source] || sourceHost(session.referrerUrl)
 }
 
 function visitorName(id: string) {
