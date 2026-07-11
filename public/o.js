@@ -189,13 +189,93 @@
     flush(); // Flush immediately on submit
   }, true);
 
+  // --- Visitor Context (language, timezone, connection, UTM) ---
+  function collectContext() {
+    var ctx = {
+      language: navigator.language || undefined,
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight
+    };
+
+    // Timezone
+    try {
+      ctx.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (e) {}
+
+    // Connection quality
+    var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn && conn.effectiveType) {
+      ctx.connection = conn.effectiveType;
+    }
+
+    // Colour scheme preference
+    if (window.matchMedia) {
+      ctx.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    // Touch capability
+    ctx.touch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+    // UTM / campaign parameters
+    try {
+      var params = new URLSearchParams(location.search);
+      var utm = {};
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'ref'].forEach(function (key) {
+        var val = params.get(key);
+        if (val) utm[key.replace('utm_', '')] = val.substring(0, 120);
+      });
+      if (Object.keys(utm).length) ctx.utm = utm;
+    } catch (e) {}
+
+    return ctx;
+  }
+
+  // --- Page Performance (load timing) ---
+  function collectPerformance() {
+    if (!window.performance || !performance.getEntriesByType) return undefined;
+    try {
+      var nav = performance.getEntriesByType('navigation')[0];
+      if (!nav) return undefined;
+      return {
+        loadTime: Math.round(nav.loadEventEnd - nav.startTime),
+        domReady: Math.round(nav.domContentLoadedEventEnd - nav.startTime),
+        ttfb: Math.round(nav.responseStart - nav.startTime)
+      };
+    } catch (e) {
+      return undefined;
+    }
+  }
+
   // --- Page View ---
-  track('pageview', {
+  track('pageview', Object.assign({
     referrer: document.referrer || undefined,
-    title: document.title,
-    screenWidth: window.innerWidth,
-    screenHeight: window.innerHeight
-  });
+    title: document.title
+  }, collectContext()));
+
+  // Capture performance once the page has fully loaded
+  if (document.readyState === 'complete') {
+    reportPerformance();
+  } else {
+    window.addEventListener('load', function () {
+      setTimeout(reportPerformance, 0);
+    });
+  }
+  function reportPerformance() {
+    var perf = collectPerformance();
+    if (perf) track('performance', perf);
+  }
+
+  // --- Outbound Link Tracking ---
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest && e.target.closest('a[href]');
+    if (!link) return;
+    try {
+      var url = new URL(link.href, location.href);
+      if (url.hostname && url.hostname !== location.hostname) {
+        track('outbound', { href: url.href, host: url.hostname });
+      }
+    } catch (err) {}
+  }, true);
 
   // --- Page Visibility / Leave ---
   document.addEventListener('visibilitychange', function () {
@@ -233,12 +313,10 @@
       maxScroll = 0;
 
       // Track new pageview
-      track('pageview', {
+      track('pageview', Object.assign({
         referrer: document.referrer || undefined,
-        title: document.title,
-        screenWidth: window.innerWidth,
-        screenHeight: window.innerHeight
-      });
+        title: document.title
+      }, collectContext()));
 
       // Re-observe sections on new page
       observeSections();

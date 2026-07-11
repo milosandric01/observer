@@ -12,7 +12,7 @@
         <!-- Project info -->
         <UiCard>
           <div class="flex items-center gap-3 mb-1">
-            <UiFavicon :domain="currentProject.domain" :name="currentProject.name" :size="40" />
+            <UiFavicon :domain="currentProject.domain" :name="currentProject.name" :size="40" framed />
             <div>
               <h4 class="text-body-lg font-semibold">{{ currentProject.name }}</h4>
               <p class="text-body-sm text-ink-subtle">{{ currentProject.domain }}</p>

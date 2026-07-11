@@ -17,7 +17,20 @@ export const sessions = pgTable('sessions', {
   pageviews: jsonb('pageviews').$type<string[]>().default([]),
   totalClicks: integer('total_clicks').default(0),
   maxScroll: integer('max_scroll').default(0),
-  eventCount: integer('event_count').default(0)
+  eventCount: integer('event_count').default(0),
+  browser: text('browser'),
+  os: text('os'),
+  device: text('device'),
+  country: text('country'),
+  source: text('source'),
+  referrerUrl: text('referrer_url'),
+  language: text('language'),
+  timezone: text('timezone'),
+  connection: text('connection'),
+  utmSource: text('utm_source'),
+  utmMedium: text('utm_medium'),
+  utmCampaign: text('utm_campaign'),
+  loadTime: integer('load_time'),
 })
 
 export const events = pgTable('events', {

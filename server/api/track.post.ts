@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, getHeader } from 'h3'
 import { eq, and } from 'drizzle-orm'
 import { db } from '../db'
 import { projects, sessions, events } from '../db/schema'
+import { parseUserAgent, detectSource } from '../utils/visitor'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -75,6 +76,23 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // Parse visitor info from request headers
+    const ua = getHeader(event, 'user-agent') || ''
+    const { browser, os, device } = parseUserAgent(ua)
+
+    // Get country from Vercel geo header (falls back to empty)
+    const country = getHeader(event, 'x-vercel-ip-country') || ''
+
+    // Get source + context from the first pageview in this batch
+    const firstPageview = body.events.find((ev: any) => ev.type === 'pageview')
+    const { source, referrerUrl } = detectSource(firstPageview?.data?.referrer)
+    const pv = firstPageview?.data || {}
+    const utm = pv.utm || {}
+
+    // Load time comes from the performance event
+    const perfEvent = body.events.find((ev: any) => ev.type === 'performance')
+    const loadTime = perfEvent?.data?.loadTime ?? null
+
     await db.insert(sessions).values({
       projectId: body.projectId,
       sessionId: body.sessionId,
@@ -84,7 +102,20 @@ export default defineEventHandler(async (event) => {
       pageviews,
       totalClicks,
       maxScroll,
-      eventCount: body.events.length
+      eventCount: body.events.length,
+      browser,
+      os,
+      device,
+      country,
+      source,
+      referrerUrl,
+      language: pv.language || null,
+      timezone: pv.timezone || null,
+      connection: pv.connection || null,
+      utmSource: utm.source || null,
+      utmMedium: utm.medium || null,
+      utmCampaign: utm.campaign || null,
+      loadTime,
     })
   }
 

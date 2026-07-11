@@ -79,6 +79,68 @@ const SCREEN_SIZES = [
   { w: 1536, h: 864 },
 ]
 
+// Visitor profiles — weighted toward desktop Chrome
+const VISITOR_PROFILES = [
+  { browser: 'Chrome',  os: 'Windows', device: 'Desktop' as const },
+  { browser: 'Chrome',  os: 'Windows', device: 'Desktop' as const },
+  { browser: 'Chrome',  os: 'Mac OS',  device: 'Desktop' as const },
+  { browser: 'Chrome',  os: 'Mac OS',  device: 'Desktop' as const },
+  { browser: 'Chrome',  os: 'Mac OS',  device: 'Desktop' as const },
+  { browser: 'Safari',  os: 'Mac OS',  device: 'Desktop' as const },
+  { browser: 'Safari',  os: 'Mac OS',  device: 'Desktop' as const },
+  { browser: 'Firefox', os: 'Windows', device: 'Desktop' as const },
+  { browser: 'Firefox', os: 'Linux',   device: 'Desktop' as const },
+  { browser: 'Edge',    os: 'Windows', device: 'Desktop' as const },
+  { browser: 'Safari',  os: 'iOS',     device: 'Mobile' as const },
+  { browser: 'Safari',  os: 'iOS',     device: 'Mobile' as const },
+  { browser: 'Chrome',  os: 'Android', device: 'Mobile' as const },
+  { browser: 'Chrome',  os: 'Android', device: 'Mobile' as const },
+  { browser: 'Safari',  os: 'iOS',     device: 'Tablet' as const },
+  { browser: 'Chrome',  os: 'Android', device: 'Tablet' as const },
+]
+
+const COUNTRIES = [
+  'US', 'US', 'US', 'US', // weighted
+  'GB', 'GB',
+  'DE', 'DE',
+  'FR',
+  'CA', 'CA',
+  'AU',
+  'NL',
+  'SE',
+  'JP',
+  'BR',
+  'IN',
+  'PL',
+  'ES',
+  'KR',
+]
+
+// Source derived from referrer
+const SOURCE_MAP: Record<string, string> = {
+  '': 'Direct',
+  'https://google.com/search?q=acme+saas': 'Google',
+  'https://google.com/search?q=website+analytics': 'Google',
+  'https://x.com/': 'X',
+  'https://reddit.com/r/SaaS/': 'Reddit',
+  'https://producthunt.com/': 'Product Hunt',
+  'https://news.ycombinator.com/': 'Hacker News',
+  'https://linkedin.com/': 'LinkedIn',
+}
+
+const LANGUAGES = ['en-US', 'en-US', 'en-GB', 'de-DE', 'fr-FR', 'es-ES', 'pt-BR', 'ja-JP', 'nl-NL', 'sv-SE']
+const TIMEZONES = ['America/New_York', 'America/Los_Angeles', 'Europe/London', 'Europe/Berlin', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney', 'America/Sao_Paulo']
+const CONNECTIONS = ['4g', '4g', '4g', 'wifi', '3g', 'slow-2g']
+
+// UTM campaigns (only some sessions have them)
+const UTM_CAMPAIGNS = [
+  null, null, null, null, null, // most have none
+  { source: 'twitter', medium: 'social', campaign: 'launch' },
+  { source: 'newsletter', medium: 'email', campaign: 'weekly-digest' },
+  { source: 'producthunt', medium: 'referral', campaign: 'ph-launch' },
+  { source: 'google', medium: 'cpc', campaign: 'brand-search' },
+]
+
 function rand<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -128,6 +190,14 @@ async function seed() {
         const visitor = generateId()
         const screen = rand(SCREEN_SIZES)
         const referrer = rand(REFERRERS)
+        const profile = rand(VISITOR_PROFILES)
+        const country = rand(COUNTRIES)
+        const source = SOURCE_MAP[referrer] || 'Direct'
+        const language = rand(LANGUAGES)
+        const timezone = rand(TIMEZONES)
+        const connection = rand(CONNECTIONS)
+        const utm = rand(UTM_CAMPAIGNS)
+        const loadTime = randInt(280, 3200)
 
         const dayStart = new Date(now - dayOffset * 24 * 60 * 60 * 1000)
         dayStart.setHours(randInt(6, 23), randInt(0, 59), randInt(0, 59))
@@ -303,9 +373,9 @@ async function seed() {
         const totalClicks = events.filter(e => e.type === 'click').length
 
         await pool.query(
-          `INSERT INTO sessions (project_id, session_id, visitor, started_at, last_seen_at, pageviews, total_clicks, max_scroll, event_count)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-          [proj.id, sessionId, visitor, startedAt, lastSeenAt, JSON.stringify(visitedPaths), totalClicks, sessionMaxScroll, events.length]
+          `INSERT INTO sessions (project_id, session_id, visitor, started_at, last_seen_at, pageviews, total_clicks, max_scroll, event_count, browser, os, device, country, source, referrer_url, language, timezone, connection, utm_source, utm_medium, utm_campaign, load_time)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)`,
+          [proj.id, sessionId, visitor, startedAt, lastSeenAt, JSON.stringify(visitedPaths), totalClicks, sessionMaxScroll, events.length, profile.browser, profile.os, profile.device, country, source, referrer || '', language, timezone, connection, utm?.source || null, utm?.medium || null, utm?.campaign || null, loadTime]
         )
 
         await pool.query(

@@ -7,7 +7,7 @@
       @click="open = !open"
     >
       <span class="flex items-center gap-2 min-w-0">
-        <UiFavicon v-if="selectedOption?.domain" :domain="selectedOption.domain" :name="selectedOption.label" :size="18" />
+        <UiFavicon v-if="selectedOption?.domain" :domain="selectedOption.domain" :name="selectedOption.label" :size="18" framed />
         <span class="truncate">{{ selectedLabel || placeholder }}</span>
       </span>
       <span class="text-ink-subtle text-caption shrink-0 transition-transform" :class="{ 'rotate-180': open }">▾</span>
@@ -26,7 +26,7 @@
         @click="select(opt.value)"
       >
         <span class="flex items-center gap-2 min-w-0">
-          <UiFavicon v-if="opt.domain" :domain="opt.domain" :name="opt.label" :size="18" />
+          <UiFavicon v-if="opt.domain" :domain="opt.domain" :name="opt.label" :size="18" framed />
           <span class="truncate">{{ opt.label }}</span>
         </span>
         <span v-if="opt.value === modelValue" class="text-primary shrink-0">✓</span>
