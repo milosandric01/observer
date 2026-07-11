@@ -297,10 +297,12 @@ const pageTabs = computed(() => [
   { key: 'pages', label: 'Pages', icon: 'path' as const, items: breakdown.value.pages },
 ])
 
-// React to project switches from the sidebar
-watch(selectedProjectId, () => {
-  loadProjectData()
-})
+// React to project selection (fires immediately with the current value, and
+// again whenever the sidebar switches projects). loadProjectData is a no-op
+// until a project id is available, avoiding the layout/page setup race.
+watch(selectedProjectId, (id) => {
+  if (id) loadProjectData()
+}, { immediate: true })
 
 function timeAgo(date: string) {
   if (!date) return ''
@@ -377,8 +379,8 @@ function utmTooltip(session: any) {
   ].filter(Boolean).join(' · ')
 }
 
-// Initial load (selectedProjectId is set by the layout)
-if (selectedProjectId.value) {
-  await loadProjectData()
-}
+// Ensure data loads on mount even if the id was already set before the watcher
+onMounted(() => {
+  if (selectedProjectId.value && !sessionTotal.value) loadProjectData()
+})
 </script>
