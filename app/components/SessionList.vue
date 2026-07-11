@@ -8,15 +8,15 @@
     </div>
     <div v-if="sessions?.length" class="flex flex-col gap-2">
       <div v-for="session in sessions" :key="session.sessionId" class="bg-surface-1 border border-hairline rounded-md overflow-hidden">
-        <div class="flex justify-between items-center px-4 py-3.5 cursor-pointer hover:bg-surface-2 transition-colors" @click="toggle(session)">
-          <div class="flex items-center gap-3">
-            <span class="text-ink-subtle text-caption w-3">{{ open === session.sessionId ? '▾' : '▸' }}</span>
-            <span class="font-mono text-body-sm text-primary">{{ session.visitor?.slice(0, 8) }}</span>
-            <span class="flex gap-1 flex-wrap">
-              <span v-for="(page, i) in session.pageviews" :key="i" class="text-eyebrow bg-surface-2 border border-hairline px-2 py-0.5 rounded-xs text-ink-subtle">{{ page }}</span>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 px-4 py-3.5 cursor-pointer hover:bg-surface-2 transition-colors" @click="toggle(session)">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="text-ink-subtle text-caption w-3 shrink-0">{{ open === session.sessionId ? '▾' : '▸' }}</span>
+            <span class="font-mono text-body-sm text-primary shrink-0">{{ session.visitor?.slice(0, 8) }}</span>
+            <span class="flex gap-1 flex-wrap min-w-0">
+              <span v-for="(page, i) in session.pageviews" :key="i" class="text-eyebrow bg-surface-2 border border-hairline px-2 py-0.5 rounded-xs text-ink-subtle truncate max-w-[120px]">{{ page }}</span>
             </span>
           </div>
-          <div class="flex items-center gap-4 text-body-sm text-ink-subtle">
+          <div class="flex items-center gap-4 text-body-sm text-ink-subtle shrink-0 sm:pl-0 pl-6">
             <span>{{ session.eventCount }} events</span>
             <span>{{ formatTime(session.lastSeenAt) }}</span>
           </div>

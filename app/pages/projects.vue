@@ -1,7 +1,7 @@
 <template>
   <NuxtLayout>
     <div>
-      <header class="flex justify-between items-start mb-8">
+      <header class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-8">
         <div>
           <h2 class="text-headline">Projects</h2>
           <p class="text-body-sm text-ink-subtle mt-1">Manage your tracked sites</p>
@@ -31,7 +31,7 @@
 
       <div v-if="projectList?.length" class="flex flex-col gap-3">
         <div v-for="project in projectList" :key="project.id" class="bg-surface-1 border border-hairline rounded-lg p-5 cursor-pointer hover:border-hairline-strong transition-colors" @click="navigateTo('/project/' + project.id)">
-          <div class="flex items-baseline gap-3 mb-3">
+          <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 mb-3">
             <h4 class="text-body-lg font-semibold">{{ project.name }}</h4>
             <span class="text-body-sm text-ink-subtle">{{ project.domain }}</span>
           </div>

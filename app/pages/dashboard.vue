@@ -6,7 +6,7 @@
         <p class="text-body-sm text-ink-subtle mt-1">Real-time user behavior across all projects</p>
       </header>
 
-      <div class="grid grid-cols-4 gap-4 mb-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <div class="bg-surface-1 border border-hairline rounded-lg p-5 flex flex-col gap-2">
           <span class="text-caption font-medium text-ink-subtle uppercase tracking-wide">Total Sessions</span>
           <span class="text-display-md">{{ stats.totalSessions }}</span>
@@ -28,7 +28,7 @@
       <section>
         <h3 class="text-body-lg font-semibold mb-4">Recent Sessions</h3>
         <div v-if="sessions.length" class="flex flex-col gap-2">
-          <div v-for="session in sessions" :key="session.sessionId" class="flex justify-between items-center px-4 py-3.5 bg-surface-1 border border-hairline rounded-md">
+          <div v-for="session in sessions" :key="session.sessionId" class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 px-4 py-3.5 bg-surface-1 border border-hairline rounded-md">
             <div class="flex items-center gap-3">
               <span class="font-mono text-body-sm text-primary">{{ session.visitor?.slice(0, 8) }}</span>
               <span class="text-body-sm text-ink-muted">{{ session.pageviews?.length || 0 }} pages</span>

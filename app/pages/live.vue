@@ -8,11 +8,15 @@
       </header>
 
       <div class="flex flex-col gap-1.5">
-        <div v-for="event in events" :key="event.id" class="flex items-center gap-3 px-4 py-3 bg-surface-1 border border-hairline rounded-md text-body-sm">
-          <span class="font-semibold text-eyebrow uppercase px-2 py-0.5 rounded-xs bg-surface-2 text-ink-subtle min-w-[80px] text-center" :class="{ 'text-primary': event.type === 'click', 'text-success': event.type === 'pageview' }">{{ event.type }}</span>
-          <span class="text-ink-muted font-mono">{{ event.path }}</span>
-          <span class="text-ink-subtle flex-1">{{ event.detail }}</span>
-          <span class="text-caption text-ink-subtle">{{ event.time }}</span>
+        <div v-for="event in events" :key="event.id" class="flex flex-col sm:flex-row sm:items-center gap-2 px-4 py-3 bg-surface-1 border border-hairline rounded-md text-body-sm">
+          <div class="flex items-center gap-3">
+            <span class="font-semibold text-eyebrow uppercase px-2 py-0.5 rounded-xs bg-surface-2 text-ink-subtle min-w-[80px] text-center" :class="{ 'text-primary': event.type === 'click', 'text-success': event.type === 'pageview' }">{{ event.type }}</span>
+            <span class="text-ink-muted font-mono truncate">{{ event.path }}</span>
+          </div>
+          <div class="flex items-center gap-3 sm:flex-1 pl-0 sm:pl-0">
+            <span class="text-ink-subtle flex-1 truncate">{{ event.detail }}</span>
+            <span class="text-caption text-ink-subtle shrink-0">{{ event.time }}</span>
+          </div>
         </div>
         <p v-if="!events.length" class="text-body-sm text-ink-subtle text-center py-10 bg-surface-1 border border-dashed border-hairline-strong rounded-lg">
           Waiting for live events...
