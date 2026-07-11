@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:seed": "npx tsx scripts/seed.ts",
     "db:purge": "npx tsx scripts/purge.ts"
   },
   "dependencies": {

@@ -25,6 +25,12 @@
         </div>
       </div>
 
+      <!-- Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+        <AreaChart title="Sessions" :data="chartSessions" />
+        <AreaChart title="Pageviews" :data="chartPageviews" />
+      </div>
+
       <section>
         <h3 class="text-body-lg font-semibold mb-4">Recent Sessions</h3>
         <div v-if="sessions.length" class="flex flex-col gap-2">
@@ -57,12 +63,16 @@ const stats = ref({
 })
 
 const sessions = ref<any[]>([])
+const chartSessions = ref<Array<{ date: string; value: number }>>([])
+const chartPageviews = ref<Array<{ date: string; value: number }>>([])
 
 async function loadData() {
   try {
     const { data: projectsData } = await useFetch('/api/projects')
     if (projectsData.value?.length) {
-      const { data: projectData } = await useFetch('/api/projects/' + projectsData.value[0].id)
+      const projectId = projectsData.value[0].id
+
+      const { data: projectData } = await useFetch('/api/projects/' + projectId)
       if (projectData.value) {
         sessions.value = (projectData.value as any).sessions || []
         stats.value.totalSessions = (projectData.value as any).totalSessions || 0
@@ -82,6 +92,13 @@ async function loadData() {
         stats.value.avgScroll = scrolls.length
           ? Math.round(scrolls.reduce((sum: number, s: any) => sum + s.maxScroll, 0) / scrolls.length)
           : 0
+      }
+
+      // Fetch daily chart data
+      const { data: dailyData } = await useFetch('/api/stats/daily', { query: { pid: projectId, days: 14 } })
+      if (dailyData.value && Array.isArray(dailyData.value)) {
+        chartSessions.value = dailyData.value.map((d: any) => ({ date: d.date, value: d.sessions }))
+        chartPageviews.value = dailyData.value.map((d: any) => ({ date: d.date, value: d.pageviews }))
       }
     }
   } catch (_e) {

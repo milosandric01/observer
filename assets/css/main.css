@@ -3,7 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    @apply bg-canvas;
+    min-height: 100%;
+  }
   body {
     @apply bg-canvas text-ink font-body;
+    min-height: 100%;
   }
 }

@@ -7,10 +7,14 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'Observer',
+      htmlAttrs: {
+        style: 'background:#010102'
+      },
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
       ],
       meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'theme-color', content: '#08090a' },
         { property: 'og:type', content: 'website' },
         { property: 'og:title', content: 'Observer – Understand why visitors leave' },

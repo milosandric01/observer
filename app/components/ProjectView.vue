@@ -33,7 +33,7 @@ const copied = ref(false)
 const snippet = computed(() => {
   const b = import.meta.client ? window.location.origin : 'https://your-domain.com'
   const tag = 'scr' + 'ipt'
-  return `<${tag} src="${b}/t.js?pid=${props.projectId}" defer></${tag}>`
+  return `<${tag} src="${b}/o.js" data-project-id="${props.projectId}" defer></${tag}>`
 })
 function copySnippet() {
   navigator.clipboard.writeText(snippet.value)

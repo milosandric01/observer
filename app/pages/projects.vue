@@ -57,7 +57,7 @@ const { data: projectList, refresh } = await useFetch('/api/projects')
 const snippetFor = (project: any) => {
   const base = import.meta.client ? window.location.origin : ''
   const tag = 'scr' + 'ipt'
-  return `<${tag} src="${base}/t.js?pid=${project.id}" defer></${tag}>`
+  return `<${tag} src="${base}/o.js" data-project-id="${project.id}" defer></${tag}>`
 }
 
 async function createProject() {

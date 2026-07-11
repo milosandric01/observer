@@ -21,6 +21,13 @@
       "command": "npm run db:purge",
       "group": "none",
       "problemMatcher": []
+    },
+    {
+      "label": "db:seed",
+      "type": "shell",
+      "command": "npm run db:seed",
+      "group": "none",
+      "problemMatcher": []
     }
   ]
 }
